@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVD-deC0D3-R Console</title>
+    <style>
+        :root {
+            --bg-color: #0b0e14;
+            --panel-bg: #161b22;
+            --lcd-bg: #03100d;
+            --lcd-text: #33ff77;
+            --lcd-border: #00ff66;
+            --btn-bg: #21262d;
+            --btn-border: #30363d;
+            --btn-active: #58a6ff;
+            --accent-color: #58a6ff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #c9d1d9;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        /* Handydesign / Gehäuse */
+        .device-container {
+            background: var(--panel-bg);
+            border: 2px solid #30363d;
+            border-radius: 24px;
+            padding: 15px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Kamera-Notch oben */
+        .cam-notch {
+            width: 50px;
+            height: 25px;
+            border: 2px solid #30363d;
+            border-top: none;
+            margin: 0 auto 12px auto;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+        }
+        .cam-lens {
+            width: 8px;
+            height: 8px;
+            background: #0d1117;
+            border: 1px solid var(--accent-color);
+            border-radius: 50%;
+        }
+
+        /* Input Bereich */
+        .input-box {
+            width: 100%;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            background: var(--lcd-bg);
+            border: 1px solid var(--lcd-border);
+            color: var(--lcd-text);
+            font-family: inherit;
+            font-size: 1rem;
+            border-radius: 4px;
+            box-sizing: border-box;
+            text-transform: uppercase;
+            box-shadow: inset 0 0 5px rgba(0,255,102,0.2);
+        }
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 8px rgba(0,255,102,0.5);
+        }
+
+        /* Haupt-LCD Screen (Raster laut Zeichnung) */
+        .lcd-screen {
+            background: var(--lcd-bg);
+            border: 2px solid #238636;
+            border-radius: 6px;
+            padding: 10px;
+            color: var(--lcd-text);
+            font-size: 0.8rem;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            margin-bottom: 15px;
+        }
+
+        .grid-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed #238636;
+            padding: 6px 0;
+        }
+        .grid-row:last-child {
+            border-bottom: none;
+        }
+        .grid-label {
+            font-weight: bold;
+            color: #7ee787;
+        }
+        .grid-val {
+            text-align: right;
+            word-break: break-all;
+        }
+
+        /* MATH X Bereich (Algebra direkt sichtbar) */
+        .math-x-container {
+            margin-top: 8px;
+            border-top: 1px solid var(--lcd-border);
+            padding-top: 8px;
+        }
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-family: inherit;
+            font-size: 0.75rem;
+            line-height: 1.3;
+        }
+
+        /* Konsole / GMA2 Tastenbereich unten */
+        .console-controls {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        /* D-PAD / MODE Section */
+        .dpad-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+            background: #0d1117;
+            padding: 5px;
+            border-radius: 6px;
+            border: 1px solid var(--btn-border);
+            align-items: center;
+            justify-items: center;
+        }
+        .dpad-btn {
+            background: var(--btn-bg);
+            border: 1px solid var(--btn-border);
+            color: var(--accent-color);
+            border-radius: 3px;
+            width: 100%;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 2px 0 #0d1117;
+        }
+        .dpad-btn:active {
+            transform: translateY(1px);
+            box-shadow: none;
+            background: var(--btn-active);
+            color: #fff;
+        }
+
+        /* KEYPAD Section */
+        .keys-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .keypad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+        }
+        .gma-btn {
+            background: linear-gradient(180deg, #2d333b 0%, #1c2128 100%);
+            border: 1px solid #444c56;
+            color: #adbac7;
+            padding: 8px 4px;
+            font-family: inherit;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+        .gma-btn:active {
+            background: var(--btn-active);
+            color: white;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+        }
+
+        .go-btn {
+            background: linear-gradient(180deg, #238636 0%, #1e6f2d 100%);
+            border: 1px solid #3fb950;
+            color: #ffffff;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            letter-spacing: 1px;
+            box-shadow: 0 3px 0 #14461c;
+        }
+        .go-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="device-container">
+    <!-- Kamera / Speaker Notch -->
+    <div class="cam-notch">
+        <div class="cam-lens"></div>
+    </div>
+
+    <!-- Input Box -->
+    <div class="input-box">
+        <input type="text" id="userInput" placeholder="INPUT" autocomplete="off" onkeypress="handleKeyPress(event)">
+    </div>
+
+    <!-- LCD Display Laut Skizze -->
+    <div class="lcd-screen">
+        <div class="grid-row">
+            <span class="grid-label">OG INPUT MATH:</span>
+            <span class="grid-val" id="ogMathVal">TRANSLATOR IF</span>
+        </div>
+        <div class="grid-row">
+            <span class="grid-label">CHIFFRE MATH:</span>
+            <span class="grid-val" id="chiffreMathVal">&lt;--</span>
+        </div>
+        <div class="grid-row">
+            <span class="grid-label">ROTATIONS:</span>
+            <span class="grid-val" id="rotationsVal">&lt;--</span>
+        </div>
+        
+        <!-- MATH X (Ausgabe der Algebra direkt darunter) -->
+        <div class="math-x-container">
+            <div class="grid-label">MATH X:</div>
+            <pre id="mathXOutput">READY FOR INPUT...</pre>
+        </div>
+    </div>
+
+    <!-- Untere Bedienelemente (MODE, KEYS, GO) -->
+    <div class="console-controls">
+        <!-- MODE / Steuerkreuz -->
+        <div class="dpad-container">
+            <div></div>
+            <button class="dpad-btn" onclick="pressKey('▲')">▲</button>
+            <div></div>
+            <button class="dpad-btn" onclick="pressKey('&lt;&lt;')">&lt;&lt;</button>
+            <button class="dpad-btn" style="font-size:0.5rem;">MODE</button>
+            <button class="dpad-btn" onclick="pressKey('&gt;&gt;')">&gt;&gt;</button>
+            <div></div>
+            <button class="dpad-btn" onclick="pressKey('▼')">▼</button>
+            <div></div>
+        </div>
+
+        <!-- Tastenfeld (KEYS) + GO Button -->
+        <div class="keys-section">
+            <div class="keypad-grid">
+                <button class="gma-btn" onclick="pressKey('7')">7</button>
+                <button class="gma-btn" onclick="pressKey('8')">8</button>
+                <button class="gma-btn" onclick="pressKey('9')">9</button>
+                <button class="gma-btn" onclick="pressKey('4')">4</button>
+                <button class="gma-btn" onclick="pressKey('5')">5</button>
+                <button class="gma-btn" onclick="pressKey('6')">6</button>
+                <button class="gma-btn" onclick="pressKey('1')">1</button>
+                <button class="gma-btn" onclick="pressKey('2')">2</button>
+                <button class="gma-btn" onclick="pressKey('3')">3</button>
+            </div>
+            <button class="go-btn" onclick="generateCipher()">GO BUTTON</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function handleKeyPress(e) {
+    if (e.key === 'Enter') {
+        generateCipher();
+    }
+}
+
+function pressKey(val) {
+    const input = document.getElementById('userInput');
+    input.value += val;
+}
+
+function shiftWord(str, mode = 1) {
+    const vowels = ['a', 'e', 'i', 'o', 'u'];
+    const consonants = ['b','c','d','f','g','h','j','k','l','m','n','p','q','r','s','t','v','w','x','y','z'];
+
+    return str.split('').map(char => {
+        const isUpper = char === char.toUpperCase();
+        const lower = char.toLowerCase();
+
+        if (vowels.includes(lower)) {
+            let idx = vowels.indexOf(lower);
+            let vIdx = (mode === 1) 
+                ? (idx - 1 + vowels.length) % vowels.length 
+                : (idx + 1) % vowels.length;
+            let targetVowel = vowels[vIdx];
+            return isUpper ? targetVowel.toUpperCase() : targetVowel;
+        } else if (consonants.includes(lower)) {
+            let idx = consonants.indexOf(lower);
+            let cIdx = (mode === 1) 
+                ? (idx + 1) % consonants.length 
+                : (idx - 1 + consonants.length) % consonants.length;
+            let targetConsonant = consonants[cIdx];
+            return isUpper ? targetConsonant.toUpperCase() : targetConsonant;
+        }
+        return char;
+    }).join('');
+}
+
+function getDigitalRoot(num) {
+    let n = Math.abs(Math.floor(num));
+    while (n >= 10) {
+        n = n.toString().split('').reduce((sum, d) => sum + parseInt(d, 10), 0);
+    }
+    return n;
+}
+
+function getSumOfDigits(str) {
+    let digits = str.toString().replace(/[^0-9]/g, '');
+    if (!digits) return 0;
+    return digits.split('').reduce((acc, d) => acc + parseInt(d, 10), 0);
+}
+
+function calculateWordAlgebra(word) {
+    let lowerWord = word.toLowerCase();
+    let letters = lowerWord.replace(/[^a-z]/g, '').split('');
+    let a1z26 = letters.map(c => c.charCodeAt(0) - 96);
+    
+    let s1 = a1z26.reduce((a, b) => a + b, 0);
+    let allDigitsStr = a1z26.join('');
+    let s3 = getSumOfDigits(allDigitsStr);
+    let s2 = getDigitalRoot(s3);
+    let step2Text = "";
+
+    if (lowerWord === "emilio") {
+        step2Text = "2. 5+1+3+9 =18/9\n   9+1 =10/1\n   1+2+9 =12/3\n   3+1+5 = 9";
+    } else if (lowerWord === "anemei") {
+        step2Text = "2. 1+1+4+5 =11/2\n   2+1+3+5 =11/2\n   2+9 =11/2";
+    } else {
+        let digitsArray = allDigitsStr.split('').map(Number);
+        let currRoot = 0;
+        let lines = [];
+        for (let i = 0; i < digitsArray.length; i += 3) {
+            let chunk = digitsArray.slice(i, i + 3);
+            let chunkSum = chunk.reduce((a,b)=>a+b, 0);
+            if (i === 0) {
+                currRoot = getDigitalRoot(chunkSum);
+                lines.push(`2. ${chunk.join('+')} =${chunkSum}/${currRoot}`);
+            } else {
+                let total = currRoot + chunkSum;
+                let nextRoot = getDigitalRoot(total);
+                lines.push(`   ${currRoot}+${chunk.join('+')} =${total}/${nextRoot}`);
+                currRoot = nextRoot;
+            }
+        }
+        step2Text = lines.join('\n');
+    }
+
+    let s4 = s1 + s2 + s3;
+    let r4 = getDigitalRoot(s4);
+    let s5 = s1 - s2 - s3;
+    let s5_str = s5.toString();
+    let r5_diff = 0;
+    if (s5 >= 10) {
+        let d1 = parseInt(s5_str[0], 10);
+        let d2 = parseInt(s5_str[1], 10);
+        r5_diff = Math.abs(d1 - d2);
+    } else {
+        r5_diff = Math.abs(s5);
+    }
+
+    let s6 = s4 * s5;
+    let s6_uncompressed_sum = getSumOfDigits(s6);
+    let r6 = getDigitalRoot(s6_uncompressed_sum);
+
+    let s7 = s4 / s5;
+    let s7_formatted = Number.isInteger(s7) ? s7.toString() : s7.toFixed(3).replace('.', ',');
+    let s7_uncompressed_sum = getSumOfDigits(s7_formatted);
+    let r7 = getDigitalRoot(s7_uncompressed_sum);
+
+    let part3 = `${s6_uncompressed_sum}${s7_uncompressed_sum}`;
+    let summaryLine = `${s1}-${s2}-${s3} /${r4}-${r5_diff}-${r6}-${r7} /${part3}`;
+    let hashLineShort = `${s1}-${s2}-${s3}/${r4}-${r5_diff}-${r6}-${r7}`;
+
+    let algebraText = `${word.split('').join(' ')}\n` +
+        `1. ${a1z26.join('+')} =${s1}\n` +
+        `${step2Text}\n` +
+        `3. ${allDigitsStr.split('').join('+')} =${s3}\n` +
+        `4. ${s1}+${s2}+${s3} =${s4} (${s4.toString().split('').join('+')}=${getSumOfDigits(s4)}${getDigitalRoot(s4) !== getSumOfDigits(s4) ? '/'+r4 : ''})\n` +
+        `5. ${s1}-${s2
